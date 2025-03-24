@@ -1,9 +1,0 @@
-<h1>{{ object.title }}</h1>
-<p>{{ object.description }}</p>
-<p>Location: {{ object.location }}</p>
-<p>Size: {{ object.size }} sqft</p>
-<p>Price: ₹{{ object.price }}</p>
-<img src="{{ object.image.url }}" width="300">
-
-<a href="{% url 'property_update' object.id %}">Edit</a> |
-<a href="{% url 'property_list' %}">Back to List</a>
