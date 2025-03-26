@@ -1,0 +1,8 @@
+{% extends "base.html" %} {% block content %}
+<h1>Available Sellers</h1>
+<ul>
+  {% for seller in sellers %}
+  <li>{{ seller.user.username }} - {{ seller.seller_type }}</li>
+  {% endfor %}
+</ul>
+{% endblock %}
