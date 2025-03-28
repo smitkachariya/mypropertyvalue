@@ -1,8 +1,8 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from .forms import UserRegisterForm, LoginForm
 from django.contrib.auth import login, logout
 
-from .models import Property, Buyer, Seller
+from .models import Inquiry, Property, Buyer, Seller
 
 # Home Page
 def home(request):
@@ -20,9 +20,71 @@ def investor_buyer(request):
     return render(request, 'users/investor_buyer.html', {'properties': investor_properties})
 
 # Seller Page (Excluding rented sellers)
-def seller_page(request):
-    sellers = Seller.objects.exclude(seller_type='Rented Seller')
-    return render(request, 'users/seller.html', {'sellers': sellers})
+def seller_dashboard(request):
+    if request.method == "POST":
+        seller_type = request.POST.get("seller_type")
+
+        if seller_type == "retailer":
+            title = request.POST.get("title")
+            location = request.POST.get("location")
+            estimated_price = get_estimated_price(location)  # Function to fetch price
+            manual_price = request.POST.get("manual_price")
+            description = request.POST.get("description")
+
+            property_obj = Property.objects.create(
+                title=title,
+                location=location,
+                estimated_price=manual_price or estimated_price,
+                description=description,
+                seller_type="retailer"
+            )
+            property_obj.save()
+
+        elif seller_type == "builder":
+            project_name = request.POST.get("project_name")
+            location = request.POST.get("location")
+            price_range = request.POST.get("price_range")
+            status = request.POST.get("status")
+            description = request.POST.get("description")
+
+            property_obj = Property.objects.create(
+                title=project_name,
+                location=location,
+                price_range=price_range,
+                status=status,
+                description=description,
+                seller_type="builder"
+            )
+            property_obj.save()
+
+        return redirect("seller_dashboard")
+
+    properties = Property.objects.all()
+    return render(request, "users/seller.html", {"properties": properties})
+
+
+def get_estimated_price(location):
+    recent_properties = Property.objects.filter(location=location).order_by("-id")[:3]
+    if recent_properties.exists():
+        avg_price = sum([prop.estimated_price for prop in recent_properties]) / len(recent_properties)
+        return f"₹{avg_price}"
+    return "No matching properties found. Enter price manually."
+
+def edit_property(request, property_id):
+    property_obj = get_object_or_404(Property, id=property_id)
+    if request.method == "POST":
+        property_obj.title = request.POST.get("title")
+        property_obj.location = request.POST.get("location")
+        property_obj.price_range = request.POST.get("price_range")
+        property_obj.description = request.POST.get("description")
+        property_obj.save()
+        return redirect("seller_dashboard")
+    
+    return render(request, "users/edit_property.html", {"property": property_obj})
+
+def view_inquiries(request):
+    inquiries = Inquiry.objects.all()
+    return render(request, "users/inquiries.html", {"inquiries": inquiries})
 def register(request):
     if request.method == "POST":
         form = UserRegisterForm(request.POST)

@@ -1,0 +1,35 @@
+{% extends 'users/base.html' %} {% block title %}Edit Property{% endblock %} {%
+block content %}
+<div class="container">
+  <h2>Edit Property</h2>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    <label for="title">Property Title:</label>
+    <input type="text" name="title" value="{{ property.title }}" required />
+
+    <label for="location">Location:</label>
+    <input
+      type="text"
+      name="location"
+      value="{{ property.location }}"
+      required
+    />
+
+    <label for="price_range">Price Range:</label>
+    <input
+      type="text"
+      name="price_range"
+      value="{{ property.price_range }}"
+      required
+    />
+
+    <label for="description">Description:</label>
+    <textarea name="description" required>{{ property.description }}</textarea>
+
+    <button type="submit">Update Property</button>
+  </form>
+</div>
+
+{% endblock %}

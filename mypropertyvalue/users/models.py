@@ -46,3 +46,10 @@ class Seller(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     seller_type = models.CharField(max_length=20, choices=SELLER_TYPE_CHOICES)
     properties = models.ManyToManyField(Property)
+
+
+class Inquiry(models.Model):
+    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    buyer_name = models.CharField(max_length=255)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)

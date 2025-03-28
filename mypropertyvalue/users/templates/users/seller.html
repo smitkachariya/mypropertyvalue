@@ -1,8 +1,50 @@
-{% extends "base.html" %} {% block content %}
-<h1>Available Sellers</h1>
-<ul>
-  {% for seller in sellers %}
-  <li>{{ seller.user.username }} - {{ seller.seller_type }}</li>
-  {% endfor %}
-</ul>
+{% extends 'base.html' %} {% block title %}Seller Dashboard{% endblock %} {%
+block content %}
+<div class="container">
+  <h2>Seller Dashboard</h2>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    <label for="seller_type">Select Seller Type:</label>
+    <select name="seller_type" id="seller_type" required>
+      <option value="retailer">Retailer</option>
+      <option value="builder">Builder</option>
+    </select>
+
+    <div id="retailer-form">
+      <label for="title">Property Title:</label>
+      <input type="text" name="title" required />
+
+      <label for="location">Location:</label>
+      <input type="text" name="location" required />
+
+      <label for="manual_price">Price (Enter manually or auto-estimate):</label>
+      <input type="text" name="manual_price" />
+
+      <label for="description">Description:</label>
+      <textarea name="description" required></textarea>
+    </div>
+
+    <div id="builder-form">
+      <label for="project_name">Project Name:</label>
+      <input type="text" name="project_name" />
+
+      <label for="location">Location:</label>
+      <input type="text" name="location" />
+
+      <label for="price_range">Price Range:</label>
+      <input type="text" name="price_range" />
+
+      <label for="status">Status:</label>
+      <input type="text" name="status" />
+
+      <label for="description">Description:</label>
+      <textarea name="description"></textarea>
+    </div>
+
+    <button type="submit">Submit Property</button>
+  </form>
+</div>
+
 {% endblock %}

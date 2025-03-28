@@ -1,10 +1,20 @@
-{% extends "base.html" %} {% block content %}
-<h1>Welcome to MyPropertyValue</h1>
-<ul>
-  {% for property in properties %}
-  <li>
-    {{ property.title }} - {{ property.location }} - ${{ property.price }}
-  </li>
-  {% endfor %}
-</ul>
+{% extends 'base.html' %} {% block title %}Home{% endblock %} {% block content
+%}
+<div class="container">
+  <h2>Welcome to MyPropertyValue</h2>
+  <p>
+    Your one-stop platform for buying, selling, and investing in real estate.
+  </p>
+
+  <h3>Latest Properties</h3>
+  <div class="property-list">
+    {% for property in properties %}
+    <div class="property-card">
+      <h3>{{ property.title }}</h3>
+      <p><strong>Location:</strong> {{ property.location }}</p>
+      <p><strong>Price:</strong> {{ property.estimated_price }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
 {% endblock %}
