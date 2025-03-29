@@ -1,0 +1,17 @@
+{% extends 'base.html' %} {% block title %}Investor Portfolio{% endblock %} {%
+block content %}
+<h2>Your Portfolio</h2>
+<div class="portfolio-list">
+  {% for property in properties %}
+  <div class="property-card">
+    <h3>{{ property.title }}</h3>
+    <img src="{{ property.image.url }}" alt="{{ property.title }}" />
+    <p>{{ property.description }}</p>
+    <p>Price: {{ property.price }}</p>
+    <p>Location: {{ property.location }}</p>
+  </div>
+  {% empty %}
+  <p>No properties in your portfolio.</p>
+  {% endfor %}
+</div>
+{% endblock %}

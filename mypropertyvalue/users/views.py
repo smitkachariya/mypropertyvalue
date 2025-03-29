@@ -1,101 +1,60 @@
-from django.shortcuts import get_object_or_404, render, redirect
-from .forms import UserRegisterForm, LoginForm
-from django.contrib.auth import login, logout
-
-from .models import Inquiry, Property, Buyer, Seller
-
-# Home Page
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.forms import UserCreationForm
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import BuilderSeller, Portfolio, Property, RentedSeller, RetailerSeller, User
+from .forms import PropertyForm, LoginForm, UserRegisterForm
+from .models import Property, Inquiry
+from . import models  # Correct relative import
+from django.db.models import Q  # Import Q for complex queries
+# Function to render the home page
 def home(request):
-    properties = Property.objects.all()
-    return render(request, 'users/home.html', {'properties': properties})
+    return render(request, 'users/home.html')  # Assuming you have a home.html template
 
-# Retailer Buyer Page
-def retailer_buyer(request):
-    retailer_properties = Property.objects.filter(property_type='Residential')
-    return render(request, 'users/retailer_buyer.html', {'properties': retailer_properties})
-
-# Investor Page
-def investor_buyer(request):
-    investor_properties = Property.objects.filter(property_type='Commercial')
-    return render(request, 'users/investor_buyer.html', {'properties': investor_properties})
-
-# Seller Page (Excluding rented sellers)
-def seller_dashboard(request):
-    if request.method == "POST":
-        seller_type = request.POST.get("seller_type")
-
-        if seller_type == "retailer":
-            title = request.POST.get("title")
-            location = request.POST.get("location")
-            estimated_price = get_estimated_price(location)  # Function to fetch price
-            manual_price = request.POST.get("manual_price")
-            description = request.POST.get("description")
-
-            property_obj = Property.objects.create(
-                title=title,
-                location=location,
-                estimated_price=manual_price or estimated_price,
-                description=description,
-                seller_type="retailer"
-            )
-            property_obj.save()
-
-        elif seller_type == "builder":
-            project_name = request.POST.get("project_name")
-            location = request.POST.get("location")
-            price_range = request.POST.get("price_range")
-            status = request.POST.get("status")
-            description = request.POST.get("description")
-
-            property_obj = Property.objects.create(
-                title=project_name,
-                location=location,
-                price_range=price_range,
-                status=status,
-                description=description,
-                seller_type="builder"
-            )
-            property_obj.save()
-
-        return redirect("seller_dashboard")
-
-    properties = Property.objects.all()
-    return render(request, "users/seller.html", {"properties": properties})
+# Function to render the seller dashboard
 
 
-def get_estimated_price(location):
-    recent_properties = Property.objects.filter(location=location).order_by("-id")[:3]
-    if recent_properties.exists():
-        avg_price = sum([prop.estimated_price for prop in recent_properties]) / len(recent_properties)
-        return f"₹{avg_price}"
-    return "No matching properties found. Enter price manually."
+# Function to filter properties
+def filter_properties(request):
+    properties = Property.objects.all()  # Retrieve all properties
+    # Add filtering logic based on request parameters if needed
+    return render(request, 'users/property_list.html', {'properties': properties})  # Assuming you have a property_list.html template
 
-def edit_property(request, property_id):
-    property_obj = get_object_or_404(Property, id=property_id)
-    if request.method == "POST":
-        property_obj.title = request.POST.get("title")
-        property_obj.location = request.POST.get("location")
-        property_obj.price_range = request.POST.get("price_range")
-        property_obj.description = request.POST.get("description")
-        property_obj.save()
-        return redirect("seller_dashboard")
-    
-    return render(request, "users/edit_property.html", {"property": property_obj})
+# Function to render inquiries
 
-def view_inquiries(request):
-    inquiries = Inquiry.objects.all()
-    return render(request, "users/inquiries.html", {"inquiries": inquiries})
+# Function to add a property to the cart
+# Import for user feedback
+
+# Function to render the investor's portfolio
+def investor_portfolio(request):
+    return render(request, 'users/investor_portfolio.html')  # Assuming you have an investor_portfolio.html template
+
+# Function to search rentals
+def search_rentals(request):
+    query = request.GET.get('q')  # Get the search query from the request
+    properties = Property.objects.filter(name__icontains=query)  # Filter properties based on the query
+    return render(request, 'users/rental_list.html', {'properties': properties})  # Assuming you have a rental_list.html template
+
+# Function to render the retailer's buyer page
+
+# Function to render the user's profile page
+def profile(request):
+    return render(request, 'users/profile.html')  # Assuming you have a profile.html template
+
+# Function to register a new user
 def register(request):
     if request.method == "POST":
         form = UserRegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('home')  # Redirect to home page after register
+            return redirect('home')  # Redirect to home page after registration
     else:
         form = UserRegisterForm()
     return render(request, 'users/register.html', {'form': form})
 
+# Function to handle user login
 def login_view(request):
     if request.method == "POST":
         form = LoginForm(data=request.POST)
@@ -107,6 +66,198 @@ def login_view(request):
         form = LoginForm()
     return render(request, 'users/login.html', {'form': form})
 
+# Function to handle user logout
 def logout_view(request):
     logout(request)
     return redirect('home')  # Redirect to home page after logout
+
+# Function to edit a property
+@login_required
+def edit_property(request, property_id):
+    property = get_object_or_404(Property, id=property_id, owner=request.user)
+
+    if request.method == 'POST':
+        form = PropertyForm(request.POST, request.FILES, instance=property)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Property updated successfully!')
+            return redirect('your_listings')
+    else:
+        form = PropertyForm(instance=property)
+
+    return render(request, 'users/edit_property.html', {'form': form, 'property': property})
+
+# Function to list all properties
+def list_properties(request):
+    properties = Property.objects.all()  # Retrieve all properties
+    return render(request, 'users/property_list.html', {'properties': properties})  # Assuming you have a property_list.html template
+from django.shortcuts import render, redirect
+@login_required
+def retailer_buyer(request):
+    # Fetch properties listed by Retailer Sellers
+    properties = Property.objects.filter(retailer_properties__isnull=False, status='Available')
+    return render(request, 'users/retailer_buyer.html', {'properties': properties})
+
+
+@login_required
+def investor_buyer(request):
+    # Fetch properties listed by RetailerSeller and BuilderSeller
+    properties = Property.objects.filter(
+        Q(retailer_properties__isnull=False) | Q(builder_properties__isnull=False),
+        status='Available'
+    ).distinct()
+
+    # Fetch the user's portfolio (example structure)
+    portfolio_items = Portfolio.objects.filter(user=request.user)  # Assuming a Portfolio model exists
+
+    return render(request, 'users/investor_buyer.html', {
+        'properties': properties,
+        'portfolio_items': portfolio_items,
+    })
+
+from .models import Inquiry
+
+@login_required
+def rented_buyer(request):
+    properties = Property.objects.filter(rented_properties__isnull=False, status='Available')
+
+    if request.method == 'POST':
+        property_id = request.POST.get('property_id')
+        message = request.POST.get('message')
+        contact_info = request.POST.get('contact_info')
+
+        # Validate and save the inquiry
+        if property_id and message and contact_info:
+            property = get_object_or_404(Property, id=property_id)
+            Inquiry.objects.create(
+                property=property,
+                buyer=request.user,
+                message=message,
+                contact_info=contact_info
+            )
+            messages.success(request, 'Your inquiry has been sent successfully!')
+            return redirect('rented_buyer')
+
+    return render(request, 'users/rented_buyer.html', {
+        'properties': properties,
+    })
+@login_required
+def retailer_seller(request):
+    if request.method == 'POST':
+        form = PropertyForm(request.POST, request.FILES)
+        if form.is_valid():
+            property = form.save(commit=False)
+            property.owner = request.user
+            property.save()
+            retailer_seller, created = RetailerSeller.objects.get_or_create(user=request.user)
+            retailer_seller.properties.add(property)
+            messages.success(request, 'Property listed successfully!')
+            return redirect('retailer_seller')
+    else:
+        form = PropertyForm()
+
+    # Fetch properties listed by the RetailerSeller
+    retailer_seller = RetailerSeller.objects.filter(user=request.user).first()
+    properties = retailer_seller.properties.all() if retailer_seller else []
+    return render(request, 'users/retailer_seller.html', {'form': form, 'properties': properties})
+
+
+@login_required
+def builder_seller(request):
+    if request.method == 'POST':
+        form = PropertyForm(request.POST, request.FILES)
+        if form.is_valid():
+            property = form.save(commit=False)
+            property.owner = request.user
+            property.save()
+            builder_seller, created = BuilderSeller.objects.get_or_create(user=request.user)
+            builder_seller.properties.add(property)
+            messages.success(request, 'Property listed successfully!')
+            return redirect('builder_seller')
+    else:
+        form = PropertyForm()
+
+    # Fetch properties listed by the BuilderSeller
+    builder_seller = BuilderSeller.objects.filter(user=request.user).first()
+    properties = builder_seller.properties.all() if builder_seller else []
+    return render(request, 'users/builder_seller.html', {'form': form, 'properties': properties})
+
+
+@login_required
+def rented_seller(request):
+    if request.method == 'POST':
+        form = PropertyForm(request.POST, request.FILES)
+        if form.is_valid():
+            property = form.save(commit=False)
+            property.owner = request.user
+            property.save()
+            rented_seller, created = RentedSeller.objects.get_or_create(user=request.user)
+            rented_seller.properties.add(property)
+            messages.success(request, 'Property listed successfully!')
+            return redirect('rented_seller')
+    else:
+        form = PropertyForm()
+
+    # Fetch properties listed by the RentedSeller
+    rented_seller = RentedSeller.objects.filter(user=request.user).first()
+    properties = rented_seller.properties.all() if rented_seller else []
+    return render(request, 'users/rented_seller.html', {'form': form, 'properties': properties})
+
+
+@login_required
+def property_details(request, property_id):
+    property = get_object_or_404(Property, id=property_id)
+    return render(request, 'users/property_details.html', {'property': property})
+
+def list_properties(request):
+    properties = Property.objects.filter(is_sold=False)  # Only show unsold properties
+    return render(request, 'users/property_list.html', {'properties': properties})
+
+from .models import Property, Inquiry  # Assuming you have an Inquiry model
+
+@login_required
+def your_listings(request):
+    # Fetch properties listed by the logged-in user
+    properties = Property.objects.filter(owner=request.user)
+
+    # Fetch inquiries related to the user's properties
+    inquiries = Inquiry.objects.filter(property__owner=request.user)
+
+    return render(request, 'users/your_listings.html', {
+        'properties': properties,
+        'inquiries': inquiries,
+    })
+
+from django.shortcuts import get_object_or_404, redirect
+from .models import Cart
+
+@login_required
+def add_to_cart(request, property_id):
+    property = get_object_or_404(Property, id=property_id)
+    cart_item, created = Cart.objects.get_or_create(user=request.user, property=property)
+    if created:
+        messages.success(request, 'Property added to cart successfully!')
+    else:
+        messages.info(request, 'This property is already in your cart.')
+    return redirect('view_cart')  # Redirect to the cart page
+
+@login_required
+def view_cart(request):
+    cart_items = Cart.objects.filter(user=request.user)
+    return render(request, 'users/cart.html', {'cart_items': cart_items})
+@login_required
+def remove_from_cart(request, cart_item_id):
+    cart_item = get_object_or_404(Cart, id=cart_item_id, user=request.user)
+    cart_item.delete()
+    messages.success(request, 'Property removed from cart successfully!')
+    return redirect('view_cart')
+
+@login_required
+def view_inquiries(request):
+    property_id = request.GET.get('property_id')
+    if property_id:
+        inquiries = Inquiry.objects.filter(property_id=property_id, property__owner=request.user)
+    else:
+        inquiries = Inquiry.objects.filter(property__owner=request.user)
+
+    return render(request, 'users/view_inquiries.html', {'inquiries': inquiries})

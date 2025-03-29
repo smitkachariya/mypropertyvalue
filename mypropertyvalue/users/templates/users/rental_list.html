@@ -1,0 +1,17 @@
+{% extends 'base.html' %} {% block title %}Rental Properties{% endblock %} {%
+block content %}
+<h2>Rental Properties</h2>
+<div class="rental-list">
+  {% for rental in rentals %}
+  <div class="rental-card">
+    <h3>{{ rental.title }}</h3>
+    <img src="{{ rental.image.url }}" alt="{{ rental.title }}" />
+    <p>{{ rental.description }}</p>
+    <p>Price: {{ rental.price }}</p>
+    <p>Location: {{ rental.location }}</p>
+  </div>
+  {% empty %}
+  <p>No rental properties found matching your criteria.</p>
+  {% endfor %}
+</div>
+{% endblock %}

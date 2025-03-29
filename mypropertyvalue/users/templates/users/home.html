@@ -1,20 +1,31 @@
-{% extends 'base.html' %} {% block title %}Home{% endblock %} {% block content
-%}
-<div class="container">
-  <h2>Welcome to MyPropertyValue</h2>
-  <p>
-    Your one-stop platform for buying, selling, and investing in real estate.
-  </p>
+{% extends 'base.html' %} {% block title %}Home - MyPropertyValue{% endblock %}
+{% block content %}
+<div class="jumbotron bg-light text-center p-5 rounded">
+  <h1>Find Your Dream Property</h1>
+  <p class="lead">Buy, Sell, or Rent Properties with Ease</p>
+  <a href="{% url 'list_properties' %}" class="btn btn-primary btn-lg"
+    >Browse Properties</a
+  >
+</div>
 
-  <h3>Latest Properties</h3>
-  <div class="property-list">
-    {% for property in properties %}
-    <div class="property-card">
-      <h3>{{ property.title }}</h3>
-      <p><strong>Location:</strong> {{ property.location }}</p>
-      <p><strong>Price:</strong> {{ property.estimated_price }}</p>
+<div class="row mt-4">
+  {% for property in properties %}
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">{{ property.title }}</h5>
+        <p class="card-text">
+          <strong>Location:</strong> {{ property.location }}
+        </p>
+        <p class="card-text"><strong>Price:</strong> ${{ property.price }}</p>
+        <a
+          href="{% url 'property_detail' property.id %}"
+          class="btn btn-outline-primary"
+          >View Details</a
+        >
+      </div>
     </div>
-    {% endfor %}
   </div>
+  {% endfor %}
 </div>
 {% endblock %}

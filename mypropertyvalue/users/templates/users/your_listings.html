@@ -1,0 +1,41 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <h2>Your Listings</h2>
+
+  {% if properties %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Price</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for property in properties %}
+      <tr>
+        <td>{{ property.title }}</td>
+        <td>${{ property.price }}</td>
+        <td>{{ property.status }}</td>
+        <td>
+          <a
+            href="{% url 'edit_property' property.id %}"
+            class="btn btn-warning"
+            >Edit Property</a
+          >
+          <a
+            href="{% url 'view_inquiries' %}?property_id={{ property.id }}"
+            class="btn btn-info"
+            >View Inquiries</a
+          >
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>You have no properties listed.</p>
+  {% endif %}
+</div>
+{% endblock %}
