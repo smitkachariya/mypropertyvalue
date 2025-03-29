@@ -1,0 +1,26 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <h2>Available Properties</h2>
+  <div class="row">
+    {% for property in properties %}
+    <div class="col-md-4">
+      <div class="card mb-4">
+        {% if property.image %}
+        <img
+          src="{{ property.image.url }}"
+          class="card-img-top"
+          alt="{{ property.title }}"
+        />
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title">{{ property.title }}</h5>
+          <p class="card-text">{{ property.description|truncatewords:20 }}</p>
+          <p><strong>Price:</strong> ${{ property.price }}</p>
+          <p><strong>Location:</strong> {{ property.location }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

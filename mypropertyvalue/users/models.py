@@ -1,3 +1,4 @@
+import datetime
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -7,20 +8,30 @@ class User(AbstractUser):
     
     def __str__(self):
         return self.username
+
 # Property Model
 class Property(models.Model):
     PROPERTY_TYPES = [
         ('Residential', 'Residential'),
         ('Commercial', 'Commercial'),
     ]
-    
+    STATUS_CHOICES = [
+        ('Available', 'Available'),
+        ('Not Available', 'Not Available'),
+    ]
+
     title = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='property_images/', blank=True, null=True)
     description = models.TextField()
     price = models.DecimalField(max_digits=12, decimal_places=2)
     property_type = models.CharField(max_length=20, choices=PROPERTY_TYPES)
     location = models.CharField(max_length=255)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255, default="Unnamed Property") # New status field
     is_sold = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Available')  # Add this field
+
+    
     
     def __str__(self):
         return self.title
@@ -36,20 +47,52 @@ class Buyer(models.Model):
     buyer_type = models.CharField(max_length=20, choices=BUYER_TYPE_CHOICES)
     interested_properties = models.ManyToManyField(Property, blank=True)
 
-# Seller Model
-class Seller(models.Model):
-    SELLER_TYPE_CHOICES = [
-        ('Home Owner', 'Home Owner'),
-        ('Developer', 'Developer'),
-    ]
-    
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    seller_type = models.CharField(max_length=20, choices=SELLER_TYPE_CHOICES)
-    properties = models.ManyToManyField(Property)
-
 
 class Inquiry(models.Model):
-    property = models.ForeignKey(Property, on_delete=models.CASCADE)
-    buyer_name = models.CharField(max_length=255)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='inquiries')
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.TextField()
+    contact_info = models.CharField(max_length=255)  # e.g., phone or email
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Inquiry by {self.buyer.username} for {self.property.title}"
+    
+
+class RetailerSeller(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    properties = models.ManyToManyField(Property, related_name='retailer_properties')
+
+    def __str__(self):
+        return self.user.username
+
+class BuilderSeller(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    properties = models.ManyToManyField(Property, related_name='builder_properties')
+
+    def __str__(self):
+        return self.user.username
+
+class RentedSeller(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    properties = models.ManyToManyField(Property, related_name='rented_properties')
+
+    def __str__(self):
+        return self.user.username
+    
+class Cart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.property.title}"
+    
+class Portfolio(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    roi = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)  # Return on Investment
+    tenure = models.IntegerField(default=0)  # Tenure in years
+
+    def __str__(self):
+        return f"{self.user.username} - {self.property.title}"

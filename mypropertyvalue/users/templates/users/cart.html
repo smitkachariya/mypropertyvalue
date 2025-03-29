@@ -1,0 +1,38 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <h2>Your Cart</h2>
+  {% if cart_items %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Location</th>
+        <th>Price</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in cart_items %}
+      <tr>
+        <td>{{ item.property.title }}</td>
+        <td>{{ item.property.location }}</td>
+        <td>${{ item.property.price }}</td>
+        <td>
+          <a
+            href="{% url 'property_details' item.property.id %}"
+            class="btn btn-primary"
+            >View Details</a
+          >
+          <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-danger"
+            >Remove</a
+          >
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>Your cart is empty.</p>
+  {% endif %}
+</div>
+{% endblock %}

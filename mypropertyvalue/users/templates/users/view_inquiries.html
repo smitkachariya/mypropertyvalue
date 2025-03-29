@@ -1,0 +1,31 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <h2>Inquiries for Your Properties</h2>
+  {% if inquiries %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Buyer</th>
+        <th>Message</th>
+        <th>Contact Info</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for inquiry in inquiries %}
+      <tr>
+        <td>{{ inquiry.property.title }}</td>
+        <td>{{ inquiry.buyer.username }}</td>
+        <td>{{ inquiry.message }}</td>
+        <td>{{ inquiry.contact_info }}</td>
+        <td>{{ inquiry.created_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No inquiries yet.</p>
+  {% endif %}
+</div>
+{% endblock %}
