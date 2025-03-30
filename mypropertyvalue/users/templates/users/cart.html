@@ -8,6 +8,7 @@
         <th>Property</th>
         <th>Location</th>
         <th>Price</th>
+        <th>Buyer Type</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -17,6 +18,7 @@
         <td>{{ item.property.title }}</td>
         <td>{{ item.property.location }}</td>
         <td>${{ item.property.price }}</td>
+        <td>{{ item.get_buyer_type_display }}</td>
         <td>
           <a
             href="{% url 'property_details' item.property.id %}"
@@ -26,8 +28,79 @@
           <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-danger"
             >Remove</a
           >
+          <!-- Inquiry Button -->
+          <button
+            class="btn btn-info"
+            data-bs-toggle="modal"
+            data-bs-target="#inquiryModal{{ item.property.id }}"
+          >
+            Make Inquiry
+          </button>
         </td>
       </tr>
+
+      <!-- Inquiry Modal -->
+      <div
+        class="modal fade"
+        id="inquiryModal{{ item.property.id }}"
+        tabindex="-1"
+        aria-labelledby="inquiryModalLabel{{ item.property.id }}"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5
+                class="modal-title"
+                id="inquiryModalLabel{{ item.property.id }}"
+              >
+                Inquiry for {{ item.property.title }}
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <form method="POST" action="{% url 'view_cart' %}">
+                {% csrf_token %}
+                <input
+                  type="hidden"
+                  name="property_id"
+                  value="{{ item.property.id }}"
+                />
+                <div class="mb-3">
+                  <label for="message" class="form-label">Message</label>
+                  <textarea
+                    name="message"
+                    class="form-control"
+                    id="message"
+                    rows="3"
+                    required
+                  ></textarea>
+                </div>
+                <div class="mb-3">
+                  <label for="contact_info" class="form-label"
+                    >Contact Info</label
+                  >
+                  <input
+                    type="text"
+                    name="contact_info"
+                    class="form-control"
+                    id="contact_info"
+                    required
+                  />
+                </div>
+                <button type="submit" class="btn btn-primary">
+                  Send Inquiry
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
       {% endfor %}
     </tbody>
   </table>

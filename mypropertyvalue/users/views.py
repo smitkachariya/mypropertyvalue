@@ -9,8 +9,14 @@ from .models import Property, Inquiry
 from . import models  # Correct relative import
 from django.db.models import Q  # Import Q for complex queries
 # Function to render the home page
+@login_required
 def home(request):
-    return render(request, 'users/home.html')  # Assuming you have a home.html template
+    # Exclude properties owned by the logged-in user
+    available_properties = Property.objects.exclude(owner=request.user)
+
+    return render(request, 'users/home.html', {
+        'properties': available_properties
+    }) 
 
 # Function to render the seller dashboard
 
@@ -88,24 +94,32 @@ def edit_property(request, property_id):
     return render(request, 'users/edit_property.html', {'form': form, 'property': property})
 
 # Function to list all properties
+@login_required
 def list_properties(request):
-    properties = Property.objects.all()  # Retrieve all properties
-    return render(request, 'users/property_list.html', {'properties': properties})  # Assuming you have a property_list.html template
-from django.shortcuts import render, redirect
+    # Exclude properties owned by the logged-in user
+    available_properties = Property.objects.exclude(owner=request.user)
+
+    return render(request, 'users/list_properties.html', {
+        'properties': available_properties
+    })
 @login_required
 def retailer_buyer(request):
-    # Fetch properties listed by Retailer Sellers
-    properties = Property.objects.filter(retailer_properties__isnull=False, status='Available')
+    # Exclude properties owned by the logged-in user
+    properties = Property.objects.filter(
+        retailer_properties__isnull=False,
+        status='Available'
+    ).exclude(owner=request.user)
+
     return render(request, 'users/retailer_buyer.html', {'properties': properties})
 
 
 @login_required
 def investor_buyer(request):
-    # Fetch properties listed by RetailerSeller and BuilderSeller
+    # Exclude properties owned by the logged-in user
     properties = Property.objects.filter(
         Q(retailer_properties__isnull=False) | Q(builder_properties__isnull=False),
         status='Available'
-    ).distinct()
+    ).exclude(owner=request.user).distinct()
 
     # Fetch the user's portfolio (example structure)
     portfolio_items = Portfolio.objects.filter(user=request.user)  # Assuming a Portfolio model exists
@@ -115,32 +129,17 @@ def investor_buyer(request):
         'portfolio_items': portfolio_items,
     })
 
-from .models import Inquiry
 
 @login_required
 def rented_buyer(request):
-    properties = Property.objects.filter(rented_properties__isnull=False, status='Available')
+    # Filter properties available for rent and exclude properties owned by the logged-in user
+    properties = Property.objects.filter(
+        rented_properties__isnull=False,  # Ensure this field is correct for rented properties
+        status='Available'
+    ).exclude(owner=request.user)
 
-    if request.method == 'POST':
-        property_id = request.POST.get('property_id')
-        message = request.POST.get('message')
-        contact_info = request.POST.get('contact_info')
+    return render(request, 'users/rented_buyer.html', {'properties': properties})
 
-        # Validate and save the inquiry
-        if property_id and message and contact_info:
-            property = get_object_or_404(Property, id=property_id)
-            Inquiry.objects.create(
-                property=property,
-                buyer=request.user,
-                message=message,
-                contact_info=contact_info
-            )
-            messages.success(request, 'Your inquiry has been sent successfully!')
-            return redirect('rented_buyer')
-
-    return render(request, 'users/rented_buyer.html', {
-        'properties': properties,
-    })
 @login_required
 def retailer_seller(request):
     if request.method == 'POST':
@@ -234,22 +233,53 @@ from .models import Cart
 @login_required
 def add_to_cart(request, property_id):
     property = get_object_or_404(Property, id=property_id)
-    cart_item, created = Cart.objects.get_or_create(user=request.user, property=property)
+    buyer_type = request.GET.get('buyer_type', 'retailer_buyer')  # Default to 'retailer_buyer'
+
+    cart_item, created = Cart.objects.get_or_create(
+        user=request.user,
+        property=property,
+        defaults={'buyer_type': buyer_type}
+    )
+
     if created:
         messages.success(request, 'Property added to cart successfully!')
     else:
         messages.info(request, 'This property is already in your cart.')
+
     return redirect('view_cart')  # Redirect to the cart page
 
 @login_required
 def view_cart(request):
     cart_items = Cart.objects.filter(user=request.user)
+
+    if request.method == 'POST':
+        property_id = request.POST.get('property_id')
+        message = request.POST.get('message')
+        contact_info = request.POST.get('contact_info')
+
+        # Validate and save the inquiry
+        if property_id and message and contact_info:
+            property = get_object_or_404(Property, id=property_id)
+            Inquiry.objects.create(
+                property=property,
+                buyer=request.user,
+                message=message,
+                contact_info=contact_info
+            )
+            messages.success(request, 'Your inquiry has been sent successfully!')
+            return redirect('view_cart')
+
     return render(request, 'users/cart.html', {'cart_items': cart_items})
+
+
 @login_required
 def remove_from_cart(request, cart_item_id):
-    cart_item = get_object_or_404(Cart, id=cart_item_id, user=request.user)
-    cart_item.delete()
-    messages.success(request, 'Property removed from cart successfully!')
+    try:
+        cart_item = Cart.objects.get(id=cart_item_id, user=request.user)
+        cart_item.delete()
+        messages.success(request, 'Item removed from cart successfully!')
+    except Cart.DoesNotExist:
+        messages.error(request, 'Cart item not found.')
     return redirect('view_cart')
 
 @login_required

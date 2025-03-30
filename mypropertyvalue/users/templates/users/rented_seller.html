@@ -1,4 +1,4 @@
-{% extends 'base.html' %} {% load static %} {% block content %}
+{% extends 'base.html' %} {% block content %}
 <div class="container">
   <h2>Rented Seller Dashboard</h2>
 
@@ -12,37 +12,37 @@
   <!-- Your Listings Section -->
   <h3>Your Listings</h3>
   {% if properties %}
-  <div class="row">
-    {% for property in properties %}
-    <div class="col-md-4">
-      <div class="card mb-4">
-        {% if property.image %}
-        <img
-          src="{{ property.image.url }}"
-          class="card-img-top img-fluid"
-          alt="{{ property.title }}"
-        />
-        {% else %}
-        <img
-          src="{% static 'images/default-property.jpg' %}"
-          class="card-img-top img-fluid"
-          alt="Default Image"
-        />
-        {% endif %}
-        <div class="card-body">
-          <h5 class="card-title">{{ property.title }}</h5>
-          <p><strong>Location:</strong> {{ property.location }}</p>
-          <p><strong>Price:</strong> ${{ property.price }}</p>
-          <p><strong>Status:</strong> {{ property.status }}</p>
-          <p>
-            <strong>Description:</strong> {{
-            property.description|truncatewords:20 }}
-          </p>
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Price</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for property in properties %}
+      <tr>
+        <td>{{ property.title }}</td>
+        <td>${{ property.price }}</td>
+        <td>{{ property.status }}</td>
+        <td>
+          <a
+            href="{% url 'edit_property' property.id %}"
+            class="btn btn-warning"
+            >Edit Property</a
+          >
+          <a
+            href="{% url 'view_inquiries' %}?property_id={{ property.id }}"
+            class="btn btn-info"
+            >View Inquiries</a
+          >
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
   {% else %}
   <p>No properties listed yet.</p>
   {% endif %}

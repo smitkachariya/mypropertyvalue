@@ -81,12 +81,19 @@ class RentedSeller(models.Model):
         return self.user.username
     
 class Cart(models.Model):
+    BUYER_TYPE_CHOICES = [
+        ('retailer_buyer', 'Retailer Buyer'),
+        ('investor_buyer', 'Investor Buyer'),
+        ('rented_buyer', 'Rented Buyer'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    buyer_type = models.CharField(max_length=20, choices=BUYER_TYPE_CHOICES, default='retailer_buyer')
     added_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.property.title}"
+        return f"{self.user.username} - {self.property.title} ({self.get_buyer_type_display()})"
     
 class Portfolio(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

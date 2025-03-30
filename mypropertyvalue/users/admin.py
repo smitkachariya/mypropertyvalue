@@ -47,10 +47,9 @@ class InquiryAdmin(admin.ModelAdmin):
     list_filter = ('created_at',)
     ordering = ('-created_at',)
 
-# Admin for Cart
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ('user', 'property', 'added_at')
-    search_fields = ('user__username', 'property__title')
-    list_filter = ('added_at',)
+    list_display = ('user', 'property', 'buyer_type', 'added_at')
+    search_fields = ('user__username', 'property__title', 'buyer_type')
+    list_filter = ('buyer_type', 'added_at')
     ordering = ('-added_at',)

@@ -15,3 +15,11 @@ class PropertyForm(forms.ModelForm):
     class Meta:
         model = Property
         fields = ['title', 'location', 'price', 'description', 'image', 'property_type','status']
+
+from django import forms
+from .models import Inquiry
+
+class InquiryForm(forms.ModelForm):
+    class Meta:
+        model = Inquiry
+        fields = ['message', 'contact_info']
