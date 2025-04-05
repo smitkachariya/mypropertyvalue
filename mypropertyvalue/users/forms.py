@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import User, Property
-
+from django import forms
+from .models import Inquiry
 class UserRegisterForm(UserCreationForm):
     class Meta:
         model = User
@@ -16,8 +17,6 @@ class PropertyForm(forms.ModelForm):
         model = Property
         fields = ['title', 'location', 'price', 'description', 'image', 'property_type','status']
 
-from django import forms
-from .models import Inquiry
 
 class InquiryForm(forms.ModelForm):
     class Meta:

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Cart, Inquiry, User, Property, RetailerSeller, BuilderSeller, RentedSeller
+from .models import Cart, Inquiry, Transaction, User, Property, RetailerSeller, BuilderSeller, RentedSeller
 
 admin.site.register(User, UserAdmin)
 
@@ -53,3 +53,10 @@ class CartAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'property__title', 'buyer_type')
     list_filter = ('buyer_type', 'added_at')
     ordering = ('-added_at',)
+
+@admin.register(Transaction)
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ('property', 'buyer', 'seller', 'transaction_date')
+    search_fields = ('property__title', 'buyer__username', 'seller__username')
+    list_filter = ('transaction_date',)
+    ordering = ('-transaction_date',)

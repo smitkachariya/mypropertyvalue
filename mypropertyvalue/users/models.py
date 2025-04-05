@@ -8,8 +8,7 @@ class User(AbstractUser):
     
     def __str__(self):
         return self.username
-
-# Property Model
+    
 class Property(models.Model):
     PROPERTY_TYPES = [
         ('Residential', 'Residential'),
@@ -36,7 +35,6 @@ class Property(models.Model):
     def __str__(self):
         return self.title
 
-# Buyer Model (Retailer & Investor)
 class Buyer(models.Model):
     BUYER_TYPE_CHOICES = [
         ('Retailer', 'Retailer'),
@@ -52,7 +50,7 @@ class Inquiry(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='inquiries')
     buyer = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.TextField()
-    contact_info = models.CharField(max_length=255)  # e.g., phone or email
+    contact_info = models.CharField(max_length=255)  
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -101,5 +99,24 @@ class Portfolio(models.Model):
     roi = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)  # Return on Investment
     tenure = models.IntegerField(default=0)  # Tenure in years
 
+#     def __str__(self):
+#         return f"{self.user.username} - {self.property.title}"
+    
+
+class Purchase(models.Model):
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_purchases')
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_sales')
+    property = models.ForeignKey('Property', on_delete=models.CASCADE)
+    purchase_date = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
-        return f"{self.user.username} - {self.property.title}"
+        return f"{self.buyer.username} bought {self.property.title} from {self.seller.username}"
+    
+class Transaction(models.Model):
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transaction_purchases')
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transaction_sales')
+    property = models.ForeignKey('Property', on_delete=models.CASCADE)
+    transaction_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.buyer.username} bought {self.property.title} from {self.seller.username}"

@@ -1,0 +1,53 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <h2>Your Transactions</h2>
+
+  <h3>Purchases</h3>
+  {% if purchases %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Seller</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for transaction in purchases %}
+      <tr>
+        <td>{{ transaction.property.title }}</td>
+        <td>{{ transaction.seller.username }}</td>
+        <td>{{ transaction.transaction_date }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>You have not purchased any properties yet.</p>
+  {% endif %}
+
+  <h3>Sales</h3>
+  {% if sales %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Buyer</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for transaction in sales %}
+      <tr>
+        <td>{{ transaction.property.title }}</td>
+        <td>{{ transaction.buyer.username }}</td>
+        <td>{{ transaction.transaction_date }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>You have not sold any properties yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

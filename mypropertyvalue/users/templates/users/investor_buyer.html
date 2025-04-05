@@ -25,12 +25,8 @@
         <div class="card-body">
           <h5 class="card-title">{{ property.title }}</h5>
           <p><strong>Location:</strong> {{ property.location }}</p>
-          <p><strong>Price:</strong> ${{ property.price }}</p>
+          <p><strong>Price:</strong> ₹{{ property.price }}</p>
           <p><strong>Status:</strong> {{ property.status }}</p>
-          <p>
-            <strong>Description:</strong> {{
-            property.description|truncatewords:20 }}
-          </p>
           <a href="{% url 'add_to_cart' property.id %}" class="btn btn-success"
             >Add to Cart</a
           >
@@ -48,7 +44,7 @@
   <p>No properties available at the moment.</p>
   {% endif %}
 
-  <!-- Portfolio Section -->
+  <!-- Portfolio Section
   <h3>Your Investment Portfolio</h3>
   {% if portfolio_items %}
   <table class="table table-bordered">
@@ -78,5 +74,6 @@
   {% else %}
   <p>You have no properties in your portfolio.</p>
   {% endif %}
+<!-- </div>  -->
+  {% endblock %}
 </div>
-{% endblock %}

@@ -6,33 +6,40 @@
     <thead>
       <tr>
         <th>Property</th>
-        <th>Location</th>
         <th>Price</th>
-        <th>Buyer Type</th>
+        <th>Status</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
-      {% for item in cart_items %}
+      {% for cart_item in cart_items %}
       <tr>
-        <td>{{ item.property.title }}</td>
-        <td>{{ item.property.location }}</td>
-        <td>${{ item.property.price }}</td>
-        <td>{{ item.get_buyer_type_display }}</td>
+        <td>{{ cart_item.property.title }}</td>
+        <td>₹{{ cart_item.property.price }}</td>
         <td>
+          {% if cart_item.property.status == 'Available' %}
+          <span class="text-success">Available</span>
+          {% else %}
+          <span class="text-danger">Sold</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if cart_item.property.status == 'Available' %}
           <a
-            href="{% url 'property_details' item.property.id %}"
+            href="{% url 'buy_property' cart_item.property.id %}"
             class="btn btn-primary"
-            >View Details</a
+            >Buy Now</a
           >
-          <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-danger"
+          {% endif %}
+          <a
+            href="{% url 'remove_from_cart' cart_item.id %}"
+            class="btn btn-danger"
             >Remove</a
           >
-          <!-- Inquiry Button -->
           <button
             class="btn btn-info"
             data-bs-toggle="modal"
-            data-bs-target="#inquiryModal{{ item.property.id }}"
+            data-bs-target="#inquiryModal{{ cart_item.property.id }}"
           >
             Make Inquiry
           </button>
@@ -42,9 +49,9 @@
       <!-- Inquiry Modal -->
       <div
         class="modal fade"
-        id="inquiryModal{{ item.property.id }}"
+        id="inquiryModal{{ cart_item.property.id }}"
         tabindex="-1"
-        aria-labelledby="inquiryModalLabel{{ item.property.id }}"
+        aria-labelledby="inquiryModalLabel{{ cart_item.property.id }}"
         aria-hidden="true"
       >
         <div class="modal-dialog">
@@ -52,9 +59,9 @@
             <div class="modal-header">
               <h5
                 class="modal-title"
-                id="inquiryModalLabel{{ item.property.id }}"
+                id="inquiryModalLabel{{ cart_item.property.id }}"
               >
-                Inquiry for {{ item.property.title }}
+                Inquiry for {{ cart_item.property.title }}
               </h5>
               <button
                 type="button"
@@ -69,7 +76,7 @@
                 <input
                   type="hidden"
                   name="property_id"
-                  value="{{ item.property.id }}"
+                  value="{{ cart_item.property.id }}"
                 />
                 <div class="mb-3">
                   <label for="message" class="form-label">Message</label>

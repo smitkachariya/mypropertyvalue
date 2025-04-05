@@ -3,9 +3,6 @@
 <div class="jumbotron bg-light text-center p-5 rounded">
   <h1>Find Your Dream Property</h1>
   <p class="lead">Buy, Sell, or Rent Properties with Ease</p>
-  <a href="{% url 'list_properties' %}" class="btn btn-primary btn-lg"
-    >Browse Properties</a
-  >
 </div>
 
 <div class="row mt-4">
@@ -17,7 +14,7 @@
         <p class="card-text">
           <strong>Location:</strong> {{ property.location }}
         </p>
-        <p class="card-text"><strong>Price:</strong> ${{ property.price }}</p>
+        <p class="card-text"><strong>Price:</strong> ₹ {{ property.price }}</p>
         <a
           href="{% url 'property_details' property.id %}"
           class="btn btn-outline-primary"

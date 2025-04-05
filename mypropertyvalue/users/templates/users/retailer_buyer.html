@@ -1,6 +1,6 @@
 {% extends 'base.html' %} {% load static %} {% block content %}
 <div class="container">
-  <h2>Rented Buyer Dashboard</h2>
+  <h2>Retailer Buyer Dashboard</h2>
 
   <!-- Available Properties Section -->
   <h3>Available Properties</h3>
@@ -25,12 +25,8 @@
         <div class="card-body">
           <h5 class="card-title">{{ property.title }}</h5>
           <p><strong>Location:</strong> {{ property.location }}</p>
-          <p><strong>Price:</strong> ${{ property.price }}</p>
+          <p><strong>Price:</strong> ₹{{ property.price }}</p>
           <p><strong>Status:</strong> {{ property.status }}</p>
-          <p>
-            <strong>Description:</strong> {{
-            property.description|truncatewords:20 }}
-          </p>
           <a href="{% url 'add_to_cart' property.id %}" class="btn btn-success"
             >Add to Cart</a
           >
